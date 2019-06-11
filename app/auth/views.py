@@ -8,7 +8,7 @@ from flask_login import login_user, login_required, logout_user
 from app import db
 from app.auth import auth
 from app.auth.forms import LoginForm, RegistrationForm, UpdatePasswordForm, \
-    EmailForm, ResetPasswordForm
+    ResetPasswordForm
 from app.email import send_mail
 from app.models import User
 
