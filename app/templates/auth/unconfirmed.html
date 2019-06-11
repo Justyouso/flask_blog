@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %} Flask-unconfirmed {% endblock %}
+{% block page_content %}
+    <h1>Hello,
+        {% if current_user.is_authenticated %}
+            {{ current_user.username }}
+        {% else %}
+            Stranger
+        {% endif %}
+    </h1>
+    <h2> 账号还没有进行验证 </h2>
+    <p>
+        验证邮件
+        <a href={{ url_for('auth.resend_confirmation') }}>Click here</a>
+    </p>
+{% endblock %}

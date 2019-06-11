@@ -1,0 +1,7 @@
+{{ user.username}}
+欢迎来到小代blog
+请你点击以下链接进行认证
+{{ url_for('auth.confirm',token=token,_external=True) }}
+
+小代团队
+
