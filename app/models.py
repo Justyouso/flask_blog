@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Author: wangchao
 # @Time: 19-6-4 下午4:58
-
+from datetime import datetime
 from flask_login import UserMixin, AnonymousUserMixin
 from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -69,6 +69,13 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     confirmed = db.Column(db.Boolean, default=False)
+    name = db.Column(db.String(64))
+    location = db.Column(db.String(64))
+    about_me = db.Column(db.Text())
+    member_since = db.Column(db.DateTime(), default=datetime.utcnow,
+                             verbose_name="记住时间")
+    last_seen = db.Column(db.DateTime(), default=datetime.utcnow,
+                          verbose_name="登录时间")
 
     def __repr__(self):
         return '<User % r>' % self.username
@@ -89,6 +96,7 @@ class User(UserMixin, db.Model):
         s = Serializer(current_app.config["SECRET_KEY"], expiration)
         return s.dumps({'confirm': self.id})
 
+    # 验证
     def confirm(self, token):
         s = Serializer(current_app.config["SECRET_KEY"])
         try:
@@ -118,6 +126,11 @@ class User(UserMixin, db.Model):
     # 管理员权限
     def is_administrator(self):
         return self.can(Permission.ADMINISTER)
+
+    # 用户一登录就写入登录时间
+    def ping(self):
+        self.last_seen =datetime.utcnow()
+        db.session.add(self)
 
 
 # 匿名用户没有权限(未登录的都属于匿名用户)

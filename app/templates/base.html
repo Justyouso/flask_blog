@@ -27,10 +27,17 @@
                         </li>
                         <li><a href="{{ url_for('auth.update_password') }}">update
                             PWD</a></li>
+                        <li>
+                            <a href="{{ url_for('main.user', username=current_user.username) }}">
+                                Profile</a>
+                        </li>
                     {% else %}
-                    <li><a href="{{ url_for('auth.login') }}">Sign In</a></li>
+                        <li><a href="{{ url_for('auth.login') }}">Sign In</a>
+                        </li>
                     {% endif %}
                 </ul>
+
+
             </div>
         </div>
     </div>
