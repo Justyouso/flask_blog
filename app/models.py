@@ -121,7 +121,9 @@ class User(UserMixin, db.Model):
 
     # 角色验证
     def can(self, permissions):
-        return self.role is not None and self.role.permissions == permissions
+        # 进行and运算再对比验证
+        return self.role is not None and \
+               (self.role.permissions & permissions) == permissions
 
     # 管理员权限
     def is_administrator(self):
