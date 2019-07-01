@@ -12,7 +12,7 @@
             {% endif %}
         </p>
         {% endif %}
-        {% if current.is_administrator %}
+        {% if current_user.is_administrator %}
         <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
         {% endif %}
         {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
@@ -20,8 +20,10 @@
             Member since {{ moment(user.member_since).format('L') }}.
             Last seen {{ moment(user.last_seen).fromNow() }}.
         </p>
-    </div>
-    <div class="col-md-4">
-        {{ wtf.quick_form(form) }}
+        {% if user == current_user %}
+        <a class="btn btn-default" href="{{ url_for('.edit_profile') }}">
+            Edit Profile
+        </a>
+        {% endif %}
     </div>
 {% endblock %}
