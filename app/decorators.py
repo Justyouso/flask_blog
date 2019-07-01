@@ -12,6 +12,7 @@ def permissions_required(permission):
     def decorators(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            # 调用User模型中的can方法进行权限验证
             if not current_user.can(permission):
                 abort(403)
             return f(*args, **kwargs)
