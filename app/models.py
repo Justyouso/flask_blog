@@ -112,6 +112,7 @@ class User(UserMixin, db.Model):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         # 给用户赋予角色
+        self.test = 1
         if self.role is None:
             # 若email是管理员的邮箱则赋予管理员角色
             if self.email == current_app.config['ADMIN'][0]:
