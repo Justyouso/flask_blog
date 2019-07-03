@@ -3,12 +3,13 @@
 # @Time: 19-6-4 下午4:58
 from datetime import datetime
 from flask_login import UserMixin, AnonymousUserMixin
-from flask import current_app
+from flask import current_app,request
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 from app import db
 from app import login_manager
+import hashlib
 
 
 # flask_login的回调函数
@@ -76,6 +77,7 @@ class User(UserMixin, db.Model):
                              verbose_name="记住时间")
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow,
                           verbose_name="登录时间")
+    avatar_hash = db.Column(db.String(32), verbose_name="头像")
 
     def __repr__(self):
         return '<User % r>' % self.username
@@ -86,18 +88,36 @@ class User(UserMixin, db.Model):
 
     @password.setter
     def password(self, password):
+        """
+        设置密码
+        :param password: 密码
+        :return: 
+        """
         self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
+        """
+        验证密码
+        :param password: 密码
+        :return: bool
+        """
         return check_password_hash(self.password_hash, password)
 
-    # 设置token
     def generate_confirmation_token(self, expiration=3600):
+        """
+        生成token
+        :param expiration: 有效时间
+        :return: str
+        """
         s = Serializer(current_app.config["SECRET_KEY"], expiration)
         return s.dumps({'confirm': self.id})
 
-    # 验证
     def confirm(self, token):
+        """
+        账号验证
+        :param token: token
+        :return: bool
+        """
         s = Serializer(current_app.config["SECRET_KEY"])
         try:
             data = s.loads(token)
@@ -119,21 +139,57 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(permissions=0xff).first()
             else:
                 self.role = Role.query.filter_by(default=True).first()
+        if self.email is not None and self.avatar_hash is None:
+            self.avatar_hash = hashlib.md5(
+                self.email.encode('utf-8')).hexdigest()
 
-    # 角色验证
     def can(self, permissions):
+        """
+        角色验证
+        :param permissions: 权限(int)
+        :return: bool
+        """
         # 进行and运算再对比验证
         return self.role is not None and \
                (self.role.permissions & permissions) == permissions
 
-    # 管理员权限
     def is_administrator(self):
+        """
+        管理员权限
+        :return: bool
+        """
         return self.can(Permission.ADMINISTER)
 
-    # 用户一登录就写入登录时间
     def ping(self):
+        """
+        用户一登录就写入登录时间
+        :return: 
+        """
         self.last_seen =datetime.utcnow()
         db.session.add(self)
+
+    def gravatar(self, size=100, default='identicon', rating='g'):
+        """
+        生成头像
+        :param size: 图片大小(像素)
+        :param default: 默认图片生成方式
+        :param rating: 图片级别
+        :return: URL
+        """
+        if request.is_secure:
+            url = 'https://secure.gravatar.com/avator'
+        else:
+            url = 'http://www.gravatar.com/avatar'
+        hash = self.avatar_hash or hashlib.md5(
+            self.email.encode('utf-8')).hexdigest()
+        params = {
+            "url": url,
+            "hash": hash,
+            "size": size,
+            "default": default,
+            "rating": rating
+        }
+        return '{url}/hash?s={size}&d={default}&r={rating}'.format(**params)
 
 
 # 匿名用户没有权限(未登录的都属于匿名用户)
