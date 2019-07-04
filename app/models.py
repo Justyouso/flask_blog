@@ -78,6 +78,7 @@ class User(UserMixin, db.Model):
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow,
                           verbose_name="登录时间")
     avatar_hash = db.Column(db.String(32), verbose_name="头像")
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __repr__(self):
         return '<User % r>' % self.username
@@ -165,7 +166,7 @@ class User(UserMixin, db.Model):
         用户一登录就写入登录时间
         :return: 
         """
-        self.last_seen =datetime.utcnow()
+        self.last_seen = datetime.utcnow()
         db.session.add(self)
 
     def gravatar(self, size=100, default='identicon', rating='g'):
@@ -191,6 +192,60 @@ class User(UserMixin, db.Model):
         }
         return '{url}/hash?s={size}&d={default}&r={rating}'.format(**params)
 
+    @staticmethod
+    def generate_fake(count=100):
+        """
+        生成假用户
+        :param count: 数量
+        :return: 
+        """
+        from sqlalchemy.exc import IntegrityError
+        from random import seed
+        import forgery_py
+
+        seed()
+        for i in range(count):
+            u = User(email=forgery_py.internet.email_address(),
+                     username=forgery_py.internet.user_name(True),
+                     password=forgery_py.lorem_ipsum.word(),
+                     confirmed=True,
+                     name=forgery_py.name.full_name(),
+                     location=forgery_py.address.city(),
+                     about_me=forgery_py.lorem_ipsum.sentence(),
+                     member_since=forgery_py.date.date(True)
+                     )
+            db.session.add(u)
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+
+
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True,
+                          default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    @staticmethod
+    def generate_fake(count=100):
+        from random import seed, randint
+        import forgery_py
+
+        seed()
+        user_count = User.query.count()
+        for i in range(count):
+            u = User.query.offset(
+                randint(0, user_count - 1)).first()
+            p = Post(body=forgery_py.lorem_ipsum.sentences(
+                randint(1, 3)),
+                timestamp=forgery_py.date.date(True),
+                author=u)
+            db.session.add(p)
+            db.session.commit()
+
 
 # 匿名用户没有权限(未登录的都属于匿名用户)
 class AnonymousUser(AnonymousUserMixin):
@@ -203,3 +258,7 @@ class AnonymousUser(AnonymousUserMixin):
 
 # 管理匿名用户
 login_manager.anonymous_user = AnonymousUser
+
+
+
+

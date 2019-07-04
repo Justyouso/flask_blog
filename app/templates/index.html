@@ -1,5 +1,8 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
 {% block page_content %}
+<div class="page-header">
     <h1>
         Hello,
         {% if current_user.is_authenticated %}
@@ -8,6 +11,13 @@
             Stranger
         {% endif %}
     </h1>
+</div>
+<div>
+    {% if current_user.can(Permission.WRITE_ARTICLES) %}
+    {{ wtf.quick_form(form) }}
+    {% endif %}
+</div>
+{% include '_posts.html' %}
 {% endblock %}
 {#<p>{{ moment(current_time).format("LLL") }}</p>#}
 {#<p>That was {{ moment(current_time).fromNow(refresh=True) }}</p>#}
