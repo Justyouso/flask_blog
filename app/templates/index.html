@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
+{% import "_macros.html" as macros %}
 
 {% block page_content %}
 <div class="page-header">
@@ -18,6 +19,14 @@
     {% endif %}
 </div>
 {% include '_posts.html' %}
+<div class="pagination">
+    {{ macros.pagination_widget(pagination, '.index') }}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
 {% endblock %}
 {#<p>{{ moment(current_time).format("LLL") }}</p>#}
 {#<p>That was {{ moment(current_time).fromNow(refresh=True) }}</p>#}

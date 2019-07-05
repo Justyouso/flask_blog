@@ -2,6 +2,8 @@
 # @Author: wangchao
 # @Time: 19-6-4 下午4:58
 from datetime import datetime
+import bleach
+from markdown2 import markdown
 from flask_login import UserMixin, AnonymousUserMixin
 from flask import current_app,request
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -220,6 +222,18 @@ class User(UserMixin, db.Model):
             except IntegrityError:
                 db.session.rollback()
 
+# 匿名用户没有权限(未登录的都属于匿名用户)
+class AnonymousUser(AnonymousUserMixin):
+    def can(self, permissions):
+        return False
+
+    def is_administrator(self):
+        return False
+
+
+# 管理匿名用户
+login_manager.anonymous_user = AnonymousUser
+
 
 class Post(db.Model):
     __tablename__ = 'posts'
@@ -228,6 +242,7 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, index=True,
                           default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    body_html = db.Column(db.Text)
 
     @staticmethod
     def generate_fake(count=100):
@@ -246,19 +261,13 @@ class Post(db.Model):
             db.session.add(p)
             db.session.commit()
 
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                        'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                        'h1', 'h2', 'h3', 'p']
+        target.body_html = bleach.linkify(bleach.clean(markdown(
+            value, output_format='html'), tags=allowed_tags, strip=True))
 
-# 匿名用户没有权限(未登录的都属于匿名用户)
-class AnonymousUser(AnonymousUserMixin):
-    def can(self, permissions):
-        return False
-
-    def is_administrator(self):
-        return False
-
-
-# 管理匿名用户
-login_manager.anonymous_user = AnonymousUser
-
-
-
-
+# 监听body字段
+db.event.listen(Post.body, 'set', Post.on_changed_body)

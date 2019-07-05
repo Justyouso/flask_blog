@@ -4,6 +4,7 @@
 
 
 from flask import Flask
+from flask_pagedown import PageDown
 from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
@@ -22,6 +23,8 @@ bootstrap = Bootstrap()
 mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
+# 实现客户端Markdown到HTML的转换程序
+pagedown = PageDown()
 
 login_manager = LoginManager()
 # 登录安全配置(当客户端IP和浏览器用户代理信息发生异常时,登出用户)
@@ -39,6 +42,7 @@ def create_app(config_name):
     moment.init_app(app)
     db.init_app(app)
     login_manager.init_app(app)
+    pagedown.init_app(app)
 
     # 注册蓝本
     # app.register_blueprint(main_bule)

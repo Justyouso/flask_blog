@@ -2,6 +2,7 @@
 # @Author: wangchao
 # @Time: 19-6-4 下午4:57
 from flask_wtf import FlaskForm
+from flask_pagedown.fields import PageDownField
 from wtforms import StringField, SubmitField, TextAreaField,BooleanField,SelectField
 from wtforms.validators import Length,DataRequired,Email,Regexp,ValidationError
 from app.models import Role,User
@@ -51,5 +52,5 @@ class PostForm(FlaskForm):
     """
     文章
     """
-    body = TextAreaField("What's on your mind?", validators=[DataRequired()])
+    body = PageDownField("What's on your mind?", validators=[DataRequired()])
     submit = SubmitField('Submit')

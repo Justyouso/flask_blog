@@ -2,7 +2,8 @@
 # @Author: wangchao
 # @Time: 19-6-4 下午4:57
 
-from flask import render_template, abort, flash, redirect, url_for
+from flask import render_template, abort, flash, redirect, url_for, request, \
+    current_app
 from flask_login import current_user, login_required
 
 from app import db
@@ -16,13 +17,18 @@ from app.decorators import admin_required
 def index():
     form = PostForm()
     if current_user.can(Permission.WRITE_ARTICLES) and \
-        form.validate_on_submit():
+            form.validate_on_submit():
         post = Post(body=form.body.data,
                     author=current_user._get_current_object())
         db.session.add(post)
         return redirect(url_for('.index'))
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
-    return render_template('index.html', form=form, posts=posts)
+    page = request.args.get('page', 1, type=int)
+    pagination = Post.query.order_by(Post.timestamp.desc()) \
+        .paginate(page, per_page=current_app.config["FLASKY_POSTS_PER_PAGE"],
+                  error_out=False)
+    posts = pagination.items
+    return render_template('index.html', form=form, posts=posts,
+                           pagination=pagination)
 
 
 @main.route("/user/<username>")
@@ -83,3 +89,14 @@ def edit_profile_admin(id):
     form.location.data = user.location
     form.about_me.data = user.about_me
     return render_template('auth/common.html', form=form, user=user, data=data)
+
+
+@main.route('/post/<int:id>')
+def post(id):
+    """
+    文章详情
+    :param id: 文章ID
+    :return: HTML
+    """
+    post = Post.query.get_or_404(id)
+    return render_template('post.html', posts=[post])
