@@ -3,7 +3,7 @@
 # @Time: 19-6-4 下午4:58
 from datetime import datetime
 import bleach
-from markdown2 import markdown
+from markdown import markdown
 from flask_login import UserMixin, AnonymousUserMixin
 from flask import current_app,request
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -271,3 +271,12 @@ class Post(db.Model):
 
 # 监听body字段
 db.event.listen(Post.body, 'set', Post.on_changed_body)
+#
+#
+# class Follow(db.Model):
+#     __table__name = 'follows'
+#     follower_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+#                             primary_key=True)
+#     followed_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+#                             primary_key=True)
+
