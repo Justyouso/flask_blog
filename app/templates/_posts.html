@@ -20,6 +20,11 @@
                 <a href="{{ url_for('.post',id=post.id) }}">
                     <span class="label label-default">链接</span>
                 </a>
+                {% if current_user == post.author %}
+                    <a href="{{ url_for('.edit',id=post.id) }}">
+                        <span class="label label-danger">编辑</span>
+                    </a>
+                {% endif %}
             </div>
         </div>
     </li>
