@@ -63,6 +63,18 @@ class Role(db.Model):
         db.session.commit()
 
 
+class Follow(db.Model):
+    """
+    用户关系表
+    """
+    __table__name = 'follows'
+    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                            primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                            primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
@@ -81,9 +93,26 @@ class User(UserMixin, db.Model):
                           verbose_name="登录时间")
     avatar_hash = db.Column(db.String(32), verbose_name="头像")
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    followed = db.relationship('Follow', foreign_keys=[Follow.follower_id],
+                               backref=db.backref('follower', lazy='joined'),
+                               lazy='dynamic', cascade='all,delete-orphan')
+    followers = db.relationship('Follow', foreign_keys=[Follow.followed_id],
+                                backref=db.backref('followed', lazy='joined'),
+                                lazy='dynamic', cascade='all,delete-orphan')
 
-    def __repr__(self):
-        return '<User % r>' % self.username
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+
+        # 给用户赋予角色
+        if self.role is None:
+            # 若email是管理员的邮箱则赋予管理员角色
+            if self.email == current_app.config['ADMIN'][0]:
+                self.role = Role.query.filter_by(permissions=0xff).first()
+            else:
+                self.role = Role.query.filter_by(default=True).first()
+        if self.email is not None and self.avatar_hash is None:
+            self.avatar_hash = hashlib.md5(
+                self.email.encode('utf-8')).hexdigest()
 
     @property
     def password(self):
@@ -132,19 +161,7 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return True
 
-    def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
-        # 给用户赋予角色
-        self.test = 1
-        if self.role is None:
-            # 若email是管理员的邮箱则赋予管理员角色
-            if self.email == current_app.config['ADMIN'][0]:
-                self.role = Role.query.filter_by(permissions=0xff).first()
-            else:
-                self.role = Role.query.filter_by(default=True).first()
-        if self.email is not None and self.avatar_hash is None:
-            self.avatar_hash = hashlib.md5(
-                self.email.encode('utf-8')).hexdigest()
+
 
     def can(self, permissions):
         """
@@ -222,6 +239,39 @@ class User(UserMixin, db.Model):
             except IntegrityError:
                 db.session.rollback()
 
+    def follow(self, user):
+        if not self.is_following(user):
+            f = Follow(follower=self, followed=user)
+            db.session.add(f)
+
+    def unfollow(self, user):
+        f = self.followed.filter_by(followed_id=user.id).first()
+        if f:
+            db.session.delete(f)
+
+    def is_following(self, user):
+        return self.followed.filter_by(followed_id=user.id).first() is not None
+
+    def is_followed_by(self, user):
+        return self.followers.filter_by(follower_id=user.id).first() is not None
+
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id) \
+            .filter(Follow.follower_id == self.id)
+
+    @staticmethod
+    def add_self_follows():
+        for user in User.query.all():
+            if not user.is_following(user):
+                print(user.username)
+                user.follow(user)
+                db.session.add(user)
+                db.session.commit()
+
+    def __repr__(self):
+        return '<User % r>' % self.username
+
 # 匿名用户没有权限(未登录的都属于匿名用户)
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
@@ -271,12 +321,6 @@ class Post(db.Model):
 
 # 监听body字段
 db.event.listen(Post.body, 'set', Post.on_changed_body)
-#
-#
-# class Follow(db.Model):
-#     __table__name = 'follows'
-#     follower_id = db.Column(db.Integer, db.ForeignKey('users.id'),
-#                             primary_key=True)
-#     followed_id = db.Column(db.Integer, db.ForeignKey('users.id'),
-#                             primary_key=True)
+
+
 
