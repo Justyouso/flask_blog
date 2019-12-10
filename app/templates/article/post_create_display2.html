@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% import "_macros.html" as macros %}
+{% block title %} 创建文章 {% endblock %}
+{% block page_content %}
+{#<div class="page-header">#}
+{#    <h1>#}
+{#        Hello,#}
+{#        {% if current_user.is_authenticated %}#}
+{#            {{ current_user.username }}#}
+{#        {% else %}#}
+{#            Stranger#}
+{#        {% endif %}#}
+{#    </h1>#}
+{##}
+{#</div>#}
+{#    <a href="">预览</a>#}
+
+<form action="" method="post" class="form" role="form">
+    <input id="csrf_token" name="csrf_token" type="hidden" value="ImM3ODJhNDI4YzRlZWU5YTUwODRhNmY3ZTEyYWZjYWQ2YmQyMTZmY2Yi.XemuGw.Fwl-BilXz1oaKlek2QVYSKYL1eU">
+{#    <div class="page-header">#}
+{#    <div class="form-group  required"><label class="control-label" for="title">标题</label>#}
+{#        <input class="btn btn-default" id="submit" name="submit" type="submit" value="提交">#}
+{#        <div class="flask-pagedown"><textarea class="form-control flask-pagedown-input" id="flask-pagedown-title" name="title" required="" style="height: 50px;width: 70px;resize: none;"></textarea></div>#}
+{#            <div class="flask-pagedown-preview" id="flask-pagedown-title-preview"></div>#}
+{#            <script type="text/javascript">#}
+{#            f = function() {#}
+{#                if (typeof flask_pagedown_converter === "undefined")#}
+{#                    flask_pagedown_converter = Markdown.getSanitizingConverter().makeHtml;#}
+{#                var textarea = document.getElementById("flask-pagedown-title");#}
+{#                var preview = document.getElementById("flask-pagedown-title-preview");#}
+{#                textarea.onkeyup = function() { preview.innerHTML = flask_pagedown_converter(textarea.value); }#}
+{#                textarea.onkeyup.call(textarea);#}
+{#            }#}
+{#            if (document.readyState === 'complete')#}
+{#                f();#}
+{#            else if (window.addEventListener)#}
+{#                window.addEventListener("load", f, false);#}
+{#            else if (window.attachEvent)#}
+{#                window.attachEvent("onload", f);#}
+{#            else#}
+{#                f();#}
+{#            </script>#}
+{#    </div>#}
+{#    </div>#}
+
+    <div class="page-header">
+{#    <div class="form-group  required"><label class="control-label" for="body">正文</label>#}
+        <div class="flask-pagedown"><textarea class="form-control flask-pagedown-input" id="flask-pagedown-body" name="body" required=""  style="height: 650px;width: 49%;resize: none;"></textarea></div>
+        <div class="flask-pagedown-preview" id="flask-pagedown-body-preview"></div>
+        <script type="text/javascript">
+        f = function() {
+            if (typeof flask_pagedown_converter === "undefined")
+                flask_pagedown_converter = Markdown.getSanitizingConverter().makeHtml;
+            var textarea = document.getElementById("flask-pagedown-body");
+            var preview = document.getElementById("flask-pagedown-body-preview");
+            textarea.onkeyup = function() { preview.innerHTML = flask_pagedown_converter(textarea.value); }
+            textarea.onkeyup.call(textarea);
+        }
+        if (document.readyState === 'complete')
+            f();
+        else if (window.addEventListener)
+            window.addEventListener("load", f, false);
+        else if (window.attachEvent)
+            window.attachEvent("onload", f);
+        else
+            f();
+        </script>
+
+{#    </div>#}
+        </div>
+
+</form>
+{#    {% if current_user.can(Permission.WRITE_ARTICLES) %}#}
+{#        {{ wtf.quick_form(form) }}#}
+{#    {% endif %}#}
+    {{ pagedown.include_pagedown() }}
+
+{% endblock %}
