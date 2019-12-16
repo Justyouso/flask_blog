@@ -17,7 +17,8 @@ from config import config
 
 blueprints = [
     "app.main:main",
-    "app.auth:auth"
+    "app.auth:auth",
+    "app.article:article"
 ]
 bootstrap = Bootstrap()
 mail = Mail()
