@@ -16,22 +16,23 @@ from app.article.forms import ArticlesForm, CommentForm
 def article_create():
     form = ArticlesForm()
     # 权限验证和表单验证
-    if current_user.can(Permission.WRITE_ARTICLES) and \
-            form.validate_on_submit():
-        body_html = request.form['fancy-editormd-html-code']
-        title_html = "<h1>" + form.title.data + "</h1>"
-        post = {
-            "body": form.body.data,
-            "body_html": body_html,
-            "title": form.title.data,
-            "title_html": title_html,
-            "author": current_user._get_current_object()
-        }
-        post = Post(**post)
-        db.session.add(post)
-        return redirect(url_for('main.index'))
-
-    return render_template('article/post_create.html', form=form)
+    if current_user.can(Permission.WRITE_ARTICLES):
+        if form.validate_on_submit():
+            body_html = request.form['fancy-editormd-html-code']
+            title_html = "<h1>" + form.title.data + "</h1>"
+            post = {
+                "body": form.body.data,
+                "body_html": body_html,
+                "title": form.title.data,
+                "title_html": title_html,
+                "author": current_user._get_current_object()
+            }
+            post = Post(**post)
+            db.session.add(post)
+            return redirect(url_for('main.index'))
+        else:
+            return render_template('article/post_create.html', form=form)
+    return redirect(url_for("auth.login"))
 
 
 @article.route("/create/display", methods=['GET', 'POST'])
@@ -46,6 +47,7 @@ def article_create_display():
         return redirect(url_for('main.index'))
 
     return render_template('article/post_create_display.html', form=form)
+
 
 # 文章详情
 @article.route('/<int:id>', methods=['GET', 'POST'])

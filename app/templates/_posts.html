@@ -11,8 +11,10 @@
             <div class="post-author"><a href="{{ url_for('main.user', username=post.author.username) }}">{{ post.author.username }}</a></div>
             <div class="post-body">
                 {% if post.body_html %}
+                    <center>{{ post.title_html| safe}}</center>
                     {{ post.body_html | safe }}
                 {% else %}
+                    <center>{{ post.title }}</center>
                     {{ post.body }}
                 {% endif %}
             </div>
