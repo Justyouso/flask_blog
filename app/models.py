@@ -289,11 +289,13 @@ login_manager.anonymous_user = AnonymousUser
 class Post(db.Model):
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.Text)
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True,
                           default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     body_html = db.Column(db.Text)
+    title_html = db.Column(db.Text)
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     @staticmethod
@@ -320,9 +322,17 @@ class Post(db.Model):
                         'h1', 'h2', 'h3', 'p']
         target.body_html = bleach.linkify(bleach.clean(markdown(
             value, output_format='html'), tags=allowed_tags, strip=True))
+    @staticmethod
+    def on_changed_title(target, value, oldvalue, initiator):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                        'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                        'h1', 'h2', 'h3', 'p']
+        target.title_html = bleach.linkify(bleach.clean(markdown(
+            value, output_format='html'), tags=allowed_tags, strip=True))
 
 # 监听body字段
-db.event.listen(Post.body, 'set', Post.on_changed_body)
+# db.event.listen(Post.body, 'set', Post.on_changed_body)
+# db.event.listen(Post.title, 'set', Post.on_changed_title)
 
 
 class Comment(db.Model):

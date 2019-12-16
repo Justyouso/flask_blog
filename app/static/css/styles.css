@@ -95,8 +95,12 @@ div.pagination {
     margin: 0px;
 }
 div.flask-pagedown-preview {
+    float: right; width: 49%;
+    height: auto;
+    /*height: 650px;*/
+    /*resize: none;*/
     margin: 10px 0px 10px 0px;
-    border: 1px solid #e0e0e0;
+    /*border: 1px solid #e0e0e0;*/
     padding: 4px;
 }
 div.flask-pagedown-preview h1 {
@@ -105,7 +109,7 @@ div.flask-pagedown-preview h1 {
 div.flask-pagedown-preview h2 {
     font-size: 130%;
 }
-div.flask-pagedown-preview h3 {
+div.flask-pagedown-preview h3 {[l;]p0oi909
     font-size: 120%;
 }
 .post-body h1 {
@@ -120,3 +124,26 @@ div.flask-pagedown-preview h3 {
 .table.followers tr {
     border-bottom: 1px solid #e0e0e0;
 }
+/*div.my-left {*/
+    /*float: left;*/
+    /*width: 49%;*/
+/*}*/
+div.my-right {
+    float: right;
+    width: 49%;
+}
+#flask-pagedown-body {
+    float: left;
+    width: 49%;
+    margin: 10px 0px 10px 0px;
+    border: 1px solid #e0e0e0;
+    padding: 4px;
+}
+
+.textarea {
+  float: right; width: 49%;
+}
+
+/*.control-label{*/
+     /*float: left;*/
+/*}*/

@@ -1,0 +1,77 @@
+<link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.css') }}"/>
+
+{#{% import 'bootstrap/wtf.html' as wtf %}#}
+{#{% import "_macros.html" as macros %}#}
+
+<script src="{{ url_for('static',filename='editormd/examples/js/jquery.min.js') }}"></script>
+<script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
+<script type="text/javascript">
+    $(function () {
+        editormd("fancy-editormd", {
+            // width: "100%", 请不要添加
+            height: 640,
+            syncScrolling: "single",
+            path: "{{ url_for('static',filename='editormd/lib/') }}",
+            saveHTMLToTextarea : true
+        });
+    });
+</script>
+{% extends "base.html" %}
+{% block title %} 创建文章 {% endblock %}
+{% block page_content %}
+<div class="page-header">
+    <h1>
+        Hello,
+        {% if current_user.is_authenticated %}
+            {{ current_user.username }}
+        {% else %}
+            Stranger
+        {% endif %}
+    </h1>
+
+</div>
+
+{#    <form class="am-form am-form-horizontal" method="post" action="" enctype="multipart/form-data">#}
+{#        <div class="am-form-group am-form-group-lg am-form-group-sm am-form-group-md">#}
+{#            <div class="am-u-sm-12 am-u-md-12 am-u-lg-12">#}
+{#            {% if form.title.errors %}#}
+{#                {% for e in form.title.errors %}#}
+{#                    <p class="help-block">{{ e }}</p>#}
+{#                {% endfor %}#}
+{#            {% endif %}#}
+{#            {{ form.title(class_="am-form-field am-radius",placeholder="请输入标题") }}#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="am-form-group am-form-group-lg am-form-group-sm am-form-group-md">#}
+{#            <div class="am-u-sm-12 am-u-md-12 am-u-lg-12">#}
+{#                {% if form.body.errors %}#}
+{#                {% for e in form.body.errors %}#}
+{#                    <p class="help-block">{{ e }}</p>#}
+{#                {% endfor %}#}
+{#                {% endif %}#}
+{#                <div id="fancy-editormd" class="editormd">#}
+{#                    {{ form.body(style="display:none;" ,class_="am-radius") }}#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="am-form-group">#}
+{#        <div class="am-u-sm-2 am-fr ">#}
+{#          <button type="submit" class="am-btn am-btn-default am-fr">提交</button>#}
+{#        </div>#}
+{#      </div>#}
+{#</form>#}
+
+    <form method="post" action="{{ url_for('article.article_create') }}">
+        {{ form.title(placeholder="请输入标题") }}
+        <div id="fancy-editormd" class="editormd">
+            {{ form.body(style="display:none;") }}
+        </div>
+        {{ form.submit }}　
+        {{ form.csrf_token }}　　
+    </form>
+{#    {% if current_user.can(Permission.WRITE_ARTICLES) %}#}
+{#        {{ wtf.quick_form(form) }}#}
+{#    {% endif %}#}
+{#    {{ pagedown.include_pagedown() }}#}
+
+{% endblock %}
