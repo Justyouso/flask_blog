@@ -291,6 +291,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.Text)
     body = db.Column(db.Text)
+    summary = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True,
                           default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
@@ -322,6 +323,8 @@ class Post(db.Model):
                         'h1', 'h2', 'h3', 'p']
         target.body_html = bleach.linkify(bleach.clean(markdown(
             value, output_format='html'), tags=allowed_tags, strip=True))
+        target.summary = target.body[:50]+"......"
+
     @staticmethod
     def on_changed_title(target, value, oldvalue, initiator):
         allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
